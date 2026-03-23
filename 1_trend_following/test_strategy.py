@@ -20,7 +20,12 @@ def load_binance_csv(path: str) -> pd.DataFrame:
     读取 Binance K线 CSV，返回标准 OHLCV DataFrame
     index 为 UTC DatetimeIndex
     """
-    df = pd.read_csv(path, header=None, names=BINANCE_COLS)
+    # 自动检测是否有表头
+    first = pd.read_csv(path, nrows=1, header=None).iloc[0, 0]
+    has_header = not str(first).isdigit()
+    df = pd.read_csv(path, header=0 if has_header else None,
+                     names=None if has_header else BINANCE_COLS)
+    df.columns = BINANCE_COLS
     df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms', utc=True)
     df = df.set_index('timestamp')
     df = df[['open', 'high', 'low', 'close', 'volume', 'quote_volume', 'trades']]
