@@ -18,6 +18,8 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+matplotlib.rcParams['font.family'] = 'Microsoft YaHei'
+matplotlib.rcParams['axes.unicode_minus'] = False
 import matplotlib.gridspec as gridspec
 from matplotlib.colors import TwoSlopeNorm
 import warnings
