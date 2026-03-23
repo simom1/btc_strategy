@@ -1,0 +1,21 @@
+# 数据文件
+data/*.csv
+data/*.parquet
+data/*.feather
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+
+# 系统
+.DS_Store
+Thumbs.db
