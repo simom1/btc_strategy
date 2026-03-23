@@ -84,3 +84,6 @@ if __name__ == '__main__':
     wf = walk_forward(df_1d, df_4h, df_1h, df_15m, df_5m, n_splits=5)
     print("\n各 Fold 明细：")
     print(wf['wf_results'].to_string(index=False))
+
+    from report import generate_report
+    generate_report(result, wf, output='report.png')

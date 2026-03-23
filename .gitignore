@@ -1,3 +1,6 @@
+# 生成的报告
+*.png
+
 # 数据文件
 data/*.csv
 data/*.parquet
