@@ -67,12 +67,13 @@ def _run_segment(
     sig_1h  = entry_signal(df_1h)
     sig_15m = entry_signal(df_15m)
 
-    # forward-fill 到 5m 时间轴
+    # forward-fill 到 5m 时间轴，再 shift(1) 避免高周期信号超前
+    # 日线/4h K线收盘后信号才确定，需等下一根才能使用
     idx        = df_5m.index
-    dir_1d_ff  = resample_signal(dir_1d,  idx)
-    dir_4h_ff  = resample_signal(dir_4h,  idx)
-    sig_1h_ff  = resample_signal(sig_1h,  idx)
-    sig_15m_ff = resample_signal(sig_15m, idx)
+    dir_1d_ff  = resample_signal(dir_1d,  idx).shift(1)
+    dir_4h_ff  = resample_signal(dir_4h,  idx).shift(1)
+    sig_1h_ff  = resample_signal(sig_1h,  idx).shift(1)
+    sig_15m_ff = resample_signal(sig_15m, idx).shift(1)
 
     # 预计算 5m 入场确认（避免循环内重复计算）
     conf_long  = entry_confirmation(df_5m,  1)
@@ -117,6 +118,11 @@ def _run_segment(
             continue
 
         # ── 空仓：检查多周期对齐 ──
+        # 信号在当前 K 线收盘确认，用下一根开盘价入场
+        next_open = df_5m['open'].iloc[i + 1] if i + 1 < len(df_5m) else None
+        if next_open is None:
+            continue
+
         for direction, conf in [(1, conf_long), (-1, conf_short)]:
             if conf.iloc[i] == 0:
                 continue
@@ -131,17 +137,17 @@ def _run_segment(
             if not aligned:
                 continue
 
-            sl, tp = calc_stops(price, atr_v, direction, sl_mult, tp_mult)
-            if abs(price - sl) == 0:
+            sl, tp = calc_stops(next_open, atr_v, direction, sl_mult, tp_mult)
+            if abs(next_open - sl) == 0:
                 continue
 
             # 开仓，手续费平仓时统一扣
             position  = {
                 'direction':  direction,
-                'entry':      price,
+                'entry':      next_open,
                 'sl':         sl,
                 'tp':         tp,
-                'entry_time': ts,
+                'entry_time': df_5m.index[i + 1],
             }
             break
 
